@@ -30,14 +30,7 @@ typedef struct {
   token_type_e type;
 } token_t;
 
-typedef struct {
-  char raw_data[LEXER_RAW_BUFFER_SIZE];
-  token_t tokens[LEXER_TOKEN_BUFFER_SIZE];
-
-  uint32_t cursor;
-  uint32_t token_count;
-
-} lexer_t;
+typedef struct lexer lexer_t;
 
 lexer_t *lexer_create();
 void lexer_free(lexer_t *ctx);
@@ -54,7 +47,5 @@ void lexer_append_token(lexer_t *ctx, token_type_e type, const char *data);
 // Debug
 void lexer_debug_print_tokens(const lexer_t *ctx);
 
-// Helpers
-uint8_t is_numeric(const char c);
 
 #endif
