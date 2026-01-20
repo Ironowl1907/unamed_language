@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -37,23 +38,58 @@ void lexer_process_data(lexer_t *ctx, token_t *token_buffer, size_t size) {
   while (ctx->raw_data[read_index++] != '\0') {
     char a = lexer_consume_char(ctx);
 
-    // switch (a) { case '+': }
+    if (a == ' ')
+      continue;
+
+    switch (a) {
+    case '+':
+      lexer_append_token(ctx, TOKEN_TYPE_SUM, NULL);
+      break;
+    case '-':
+      lexer_append_token(ctx, TOKEN_TYPE_RES, NULL);
+      break;
+    case '*':
+      lexer_append_token(ctx, TOKEN_TYPE_MUL, NULL);
+      break;
+    case '/':
+      lexer_append_token(ctx, TOKEN_TYPE_DIV, NULL);
+      break;
+    case '(':
+      lexer_append_token(ctx, TOKEN_TYPE_OPEN_PARENTHESIS, NULL);
+      break;
+    case ')':
+      lexer_append_token(ctx, TOKEN_TYPE_CLOSE_PARENTHESIS, NULL);
+      break;
+    default: {
+      char buffer[TOKEN_BUFFER_SIZE];
+      size_t index = 0;
+      while (is_numeric(lexer_peak_char(ctx))) {
+        buffer[index++] = lexer_consume_char(ctx);
+      }
+      buffer[index] = '\0';
+
+      lexer_append_token(ctx, TOKEN_TYPE_NUMBER, buffer);
+    }
+    }
   }
 
   printf("\n");
 }
 
-void lexer_append_token(lexer_t *ctx, const char *data, token_type_e type) {
+void lexer_append_token(lexer_t *ctx, token_type_e type, const char *data) {
   size_t last_index = ctx->next_token_index;
+
   ctx->tokens[last_index].type = type;
-  memcpy(ctx->tokens[last_index].data, data, strlen(data));
+  if (data) {
+    memcpy(ctx->tokens[last_index].data, data, strlen(data));
+  }
 
   ++ctx->next_token_index;
 }
 
 void lexer_debug_print_tokens(const lexer_t *ctx) {
   for (uint32_t i = 0; i < ctx->next_token_index; ++i) {
-    printf("Token Type: %d, Token data: %s", ctx->tokens[i].type,
+    printf("Token Type: %d, Token data: %s \n", ctx->tokens[i].type,
            ctx->tokens[i].data);
   }
   printf("\n");
@@ -63,3 +99,5 @@ char lexer_consume_char(lexer_t *ctx) {
   return ctx->raw_data[ctx->consume_index++];
 }
 char lexer_peak_char(lexer_t *ctx) { return ctx->raw_data[ctx->consume_index]; }
+
+uint8_t is_numeric(const char c) { return (int)c > 47 && (int)c < 58; }

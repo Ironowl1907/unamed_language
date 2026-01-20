@@ -7,7 +7,7 @@
 
 #define LEXER_RAW_BUFFER_SIZE 256
 #define LEXER_TOKEN_BUFFER_SIZE 256
-#define TOKEN__BUFFER_SIZE 16
+#define TOKEN_BUFFER_SIZE 16
 
 #include <stddef.h>
 #include <stdint.h>
@@ -21,11 +21,12 @@ typedef enum token_type {
   TOKEN_TYPE_OPEN_PARENTHESIS,
   TOKEN_TYPE_CLOSE_PARENTHESIS,
   TOKEN_TYPE_NEGATION,
+  TOKEN_TYPE_NUMBER,
   TOKEN_TYPE_EOL,
 } token_type_e;
 
 typedef struct {
-  char data[TOKEN__BUFFER_SIZE];
+  char data[TOKEN_BUFFER_SIZE];
   token_type_e type;
 } token_t;
 
@@ -48,9 +49,12 @@ void lexer_process_data(lexer_t *ctx, token_t *token_buffer, size_t size);
 
 char lexer_consume_char(lexer_t *ctx);
 char lexer_peak_char(lexer_t *ctx);
-void lexer_append_token(lexer_t *ctx, const char *data, token_type_e type);
+void lexer_append_token(lexer_t *ctx, token_type_e type, const char *data);
 
 // Debug
 void lexer_debug_print_tokens(const lexer_t *ctx);
+
+// Helpers
+uint8_t is_numeric(const char c);
 
 #endif
