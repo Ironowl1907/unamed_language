@@ -1,4 +1,4 @@
-#include "../lexer.h"
+#include "lexer.h"
 
 struct lexer {
   char raw_data[LEXER_RAW_BUFFER_SIZE];
