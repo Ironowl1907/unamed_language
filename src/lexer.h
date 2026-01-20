@@ -14,14 +14,14 @@
 
 #include <stdlib.h>
 typedef enum token_type {
-  SUM,
-  RES,
-  DIV,
-  MUL,
-  OPEN_PARENTHESIS,
-  CLOSE_PARENTHESIS,
-  NEGATION,
-  EOL,
+  TOKEN_TYPE_SUM,
+  TOKEN_TYPE_RES,
+  TOKEN_TYPE_DIV,
+  TOKEN_TYPE_MUL,
+  TOKEN_TYPE_OPEN_PARENTHESIS,
+  TOKEN_TYPE_CLOSE_PARENTHESIS,
+  TOKEN_TYPE_NEGATION,
+  TOKEN_TYPE_EOL,
 } token_type_e;
 
 typedef struct {
@@ -48,6 +48,7 @@ void lexer_process_data(lexer_t *ctx, token_t *token_buffer, size_t size);
 
 char lexer_consume_char(lexer_t *ctx);
 char lexer_peak_char(lexer_t *ctx);
+void lexer_append_token(lexer_t *ctx, const char *data, token_type_e type);
 
 // Debug
 void lexer_debug_print_tokens(const lexer_t *ctx);

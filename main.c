@@ -15,6 +15,7 @@ int main() {
 
   token_t token_buffer[TOKEN__BUFFER_SIZE];
   lexer_process_data(lexer, token_buffer, TOKEN__BUFFER_SIZE);
+	lexer_append_token(lexer, "Hello",TOKEN_TYPE_MUL);
 
   lexer_debug_print_tokens(lexer);
 
