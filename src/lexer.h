@@ -34,21 +34,21 @@ typedef struct {
   char raw_data[LEXER_RAW_BUFFER_SIZE];
   token_t tokens[LEXER_TOKEN_BUFFER_SIZE];
 
-  uint32_t consume_index;
-  uint32_t next_token_index;
+  uint32_t cursor;
+  uint32_t token_count;
 
 } lexer_t;
 
-lexer_t *lexer_init();
-void lexer_destroy(lexer_t *ctx);
+lexer_t *lexer_create();
+void lexer_free(lexer_t *ctx);
 
 int lexer_set_raw_data(lexer_t *ctx, const char *raw_data, size_t size);
-const char *lexer_get_raw_data(lexer_t *ctx);
+const char *lexer_get_raw_data(const lexer_t *ctx);
 
 void lexer_process_data(lexer_t *ctx);
 
 char lexer_consume_char(lexer_t *ctx);
-char lexer_peak_char(lexer_t *ctx);
+char lexer_peek_char(const lexer_t *ctx);
 void lexer_append_token(lexer_t *ctx, token_type_e type, const char *data);
 
 // Debug

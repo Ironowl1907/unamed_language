@@ -7,7 +7,7 @@ int main() {
   const char *input = "234 + 3 * 2";
   const size_t size = 9;
 
-  lexer_t *lexer = lexer_init();
+  lexer_t *lexer = lexer_create();
   if (!lexer)
     printf("Error creating lexer");
 
@@ -17,7 +17,7 @@ int main() {
 
   lexer_debug_print_tokens(lexer);
 
-  lexer_destroy(lexer);
+  lexer_free(lexer);
 
   return 0;
 }
