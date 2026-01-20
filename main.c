@@ -4,7 +4,7 @@
 
 int main() {
   // Input some data
-  const char *input = "2 + 3 * 2";
+  const char *input = "234 + 3 * 2";
   const size_t size = 9;
 
   lexer_t *lexer = lexer_init();

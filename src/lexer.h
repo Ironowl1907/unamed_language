@@ -22,7 +22,7 @@ typedef enum token_type {
   TOKEN_TYPE_CLOSE_PARENTHESIS,
   TOKEN_TYPE_NEGATION,
   TOKEN_TYPE_NUMBER,
-  TOKEN_TYPE_EOL,
+  TOKEN_TYPE_EOF,
 } token_type_e;
 
 typedef struct {

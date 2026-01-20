@@ -78,6 +78,7 @@ void lexer_process_data(lexer_t *ctx) {
       break;
     }
   }
+  lexer_append_token(ctx, TOKEN_TYPE_EOF, NULL);
 }
 
 void lexer_append_token(lexer_t *ctx, token_type_e type, const char *data) {
@@ -99,9 +100,16 @@ void lexer_append_token(lexer_t *ctx, token_type_e type, const char *data) {
 }
 
 void lexer_debug_print_tokens(const lexer_t *ctx) {
-  for (uint32_t i = 0; i < ctx->next_token_index; ++i) {
-    printf("Token Type: %d, Token data: %s \n", ctx->tokens[i].type,
-           ctx->tokens[i].data);
+  uint32_t index = 0;
+  for (;;) {
+    if (ctx->tokens[index].type == TOKEN_TYPE_EOF)
+      break;
+    printf("TOKEN: %d", ctx->tokens[index].type);
+    if (ctx->tokens[index].data[0] != '\0')
+      printf(" Data: %s\n", ctx->tokens[index].data);
+    else
+      printf("\n");
+    ++index;
   }
   printf("\n");
 }
