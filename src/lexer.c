@@ -15,7 +15,7 @@ lexer_t *lexer_init(void) {
   return ctx;
 }
 void lexer_destroy(lexer_t *ctx) {
-  if (!ctx)
+  if (ctx)
     free(ctx);
 }
 
@@ -33,12 +33,11 @@ int lexer_set_raw_data(lexer_t *ctx, const char *raw_data, size_t size) {
 }
 const char *lexer_get_raw_data(lexer_t *ctx) { return ctx->raw_data; }
 
-void lexer_process_data(lexer_t *ctx, token_t *token_buffer, size_t size) {
-  uint32_t read_index = 0;
-  while (ctx->raw_data[read_index++] != '\0') {
+void lexer_process_data(lexer_t *ctx) {
+  while (lexer_peak_char(ctx) != '\0') {
     char a = lexer_consume_char(ctx);
 
-    if (a == ' ')
+    if (isspace((unsigned char)a))
       continue;
 
     switch (a) {
@@ -60,31 +59,43 @@ void lexer_process_data(lexer_t *ctx, token_t *token_buffer, size_t size) {
     case ')':
       lexer_append_token(ctx, TOKEN_TYPE_CLOSE_PARENTHESIS, NULL);
       break;
-    default: {
-      char buffer[TOKEN_BUFFER_SIZE];
-      size_t index = 0;
-      while (is_numeric(lexer_peak_char(ctx))) {
-        buffer[index++] = lexer_consume_char(ctx);
-      }
-      buffer[index] = '\0';
+    default:
+      if (is_numeric(a)) {
+        char buffer[TOKEN_BUFFER_SIZE];
+        size_t index = 0;
 
-      lexer_append_token(ctx, TOKEN_TYPE_NUMBER, buffer);
-    }
+        buffer[index++] = a;
+
+        while (is_numeric(lexer_peak_char(ctx))) {
+          buffer[index++] = lexer_consume_char(ctx);
+        }
+
+        buffer[index] = '\0';
+        lexer_append_token(ctx, TOKEN_TYPE_NUMBER, buffer);
+      } else {
+        printf("Unknown character: '%c'\n", a);
+      }
+      break;
     }
   }
-
-  printf("\n");
 }
 
 void lexer_append_token(lexer_t *ctx, token_type_e type, const char *data) {
-  size_t last_index = ctx->next_token_index;
+  if (ctx->next_token_index >= LEXER_TOKEN_BUFFER_SIZE)
+    return;
 
-  ctx->tokens[last_index].type = type;
+  size_t i = ctx->next_token_index;
+
+  ctx->tokens[i].type = type;
+
   if (data) {
-    memcpy(ctx->tokens[last_index].data, data, strlen(data));
+    strncpy(ctx->tokens[i].data, data, TOKEN_BUFFER_SIZE - 1);
+    ctx->tokens[i].data[TOKEN_BUFFER_SIZE - 1] = '\0';
+  } else {
+    ctx->tokens[i].data[0] = '\0';
   }
 
-  ++ctx->next_token_index;
+  ctx->next_token_index++;
 }
 
 void lexer_debug_print_tokens(const lexer_t *ctx) {
