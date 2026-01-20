@@ -1,4 +1,5 @@
 #include "lexer_internal.h"
+#include <assert.h>
 #include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -19,21 +20,22 @@ void lexer_free(lexer_t *ctx) {
     free(ctx);
 }
 
-int lexer_set_raw_data(lexer_t *ctx, const char *raw_data, size_t size) {
+lexer_error_e lexer_set_raw_data(lexer_t *ctx, const char *raw_data,
+                                 size_t size) {
   if (!ctx || !raw_data)
-    return -1;
+    return LEXER_ERROR_NULL_PARAMETER;
 
   if (size >= LEXER_RAW_BUFFER_SIZE)
-    return -1;
+    return LEXER_ERROR_BUFFER_OVERFLOW;
 
   memcpy(ctx->raw_data, raw_data, size);
   ctx->raw_data[size] = '\0';
 
-  return 0;
+  return LEXER_ERROR_NONE;
 }
 const char *lexer_get_raw_data(const lexer_t *ctx) { return ctx->raw_data; }
 
-void lexer_process_data(lexer_t *ctx) {
+lexer_error_e lexer_process_data(lexer_t *ctx) {
   while (lexer_peek_char(ctx) != '\0') {
     char a = lexer_consume_char(ctx);
 
@@ -60,30 +62,33 @@ void lexer_process_data(lexer_t *ctx) {
       lexer_append_token(ctx, TOKEN_TYPE_CLOSE_PARENTHESIS, NULL);
       break;
     default:
-      if (is_numeric(a)) {
+      if (isdigit(a)) {
         char buffer[TOKEN_BUFFER_SIZE];
         size_t index = 0;
 
         buffer[index++] = a;
 
-        while (is_numeric(lexer_peek_char(ctx))) {
+        while (isdigit(lexer_peek_char(ctx))) {
           buffer[index++] = lexer_consume_char(ctx);
         }
 
         buffer[index] = '\0';
         lexer_append_token(ctx, TOKEN_TYPE_NUMBER, buffer);
       } else {
-        printf("Unknown character: '%c'\n", a);
+        return LEXER_ERROR_UNRECOGNIZED_CHAR;
       }
       break;
     }
   }
   lexer_append_token(ctx, TOKEN_TYPE_EOF, NULL);
+
+  return LEXER_ERROR_NONE;
 }
 
-void lexer_append_token(lexer_t *ctx, token_type_e type, const char *data) {
+lexer_error_e lexer_append_token(lexer_t *ctx, token_type_e type,
+                                 const char *data) {
   if (ctx->token_count >= LEXER_TOKEN_BUFFER_SIZE)
-    return;
+    return LEXER_ERROR_BUFFER_OVERFLOW;
 
   size_t i = ctx->token_count;
 
@@ -97,6 +102,8 @@ void lexer_append_token(lexer_t *ctx, token_type_e type, const char *data) {
   }
 
   ctx->token_count++;
+
+  return LEXER_ERROR_NONE;
 }
 
 void lexer_debug_print_tokens(const lexer_t *ctx) {
@@ -115,8 +122,13 @@ void lexer_debug_print_tokens(const lexer_t *ctx) {
 }
 
 char lexer_consume_char(lexer_t *ctx) {
+  assert(ctx);
+  assert(ctx->cursor < LEXER_RAW_BUFFER_SIZE - 1);
+
   return ctx->raw_data[ctx->cursor++];
 }
-char lexer_peek_char(const lexer_t *ctx) { return ctx->raw_data[ctx->cursor]; }
-
-uint8_t is_numeric(const char c) { return (int)c > 47 && (int)c < 58; }
+char lexer_peek_char(const lexer_t *ctx) {
+  assert(ctx);
+  assert(ctx->cursor < LEXER_RAW_BUFFER_SIZE);
+  return ctx->raw_data[ctx->cursor];
+}
