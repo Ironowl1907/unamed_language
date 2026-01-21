@@ -1,6 +1,7 @@
 #include "token_stream.h"
 #include "token_stream_internal.h"
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 token_stream_t *token_stream_create(void) {
@@ -49,6 +50,7 @@ const token_t *token_stream_get(const token_stream_t *ctx, size_t index) {
 }
 
 token_stream_error_e token_stream_resize(token_stream_t *ctx, size_t new_size) {
+  printf("Resising to:  %zu", new_size);
   if (!ctx)
     return TOKEN_STREAM_ERROR_NULL_PARAMETER;
 
