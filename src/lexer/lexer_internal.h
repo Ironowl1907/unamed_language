@@ -10,6 +10,6 @@ struct lexer {
 };
 
 // clang-format off
-char lexer_consume_char(lexer_t *ctx);
-char lexer_peek_char(const lexer_t *ctx);
+static char lexer_consume_char(lexer_t *ctx);
+static char lexer_peek_char(const lexer_t *ctx);
 lexer_error_e lexer_append_token(lexer_t *ctx, token_type_e type, const char *data);

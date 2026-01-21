@@ -18,6 +18,8 @@ typedef enum lexer_error {
   LEXER_ERROR_UNRECOGNIZED_CHAR,
   LEXER_ERROR_BUFFER_OVERFLOW,
   LEXER_ERROR_NULL_PARAMETER,
+  LEXER_ERROR_OUT_OF_MEMORY,
+  LEXER_ERROR_TOKEN_TOO_LONG,
 } lexer_error_e;
 
 typedef struct lexer lexer_t;

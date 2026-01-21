@@ -18,6 +18,12 @@ typedef enum token_type {
   TOKEN_TYPE_EOF,
 } token_type_e;
 
+typedef enum token_stream_error {
+  TOKEN_STREAM_ERROR_NONE = 0,
+  TOKEN_STREAM_ERROR_NULL_PARAMETER,
+  TOKEN_STREAM_ERROR_INSUFFICIENT_MEMORY,
+} token_stream_error_e;
+
 typedef struct {
   char data[TOKEN_BUFFER_SIZE];
   token_type_e type;
@@ -27,8 +33,9 @@ typedef struct {
 token_stream_t * token_stream_create(void);
 void token_stream_delete(token_stream_t *ctx);
 
-void token_stream_append(token_stream_t *ctx, token_t token);
+token_stream_error_e token_stream_append(token_stream_t *ctx, token_t token);
+size_t token_stream_size(const token_stream_t *ctx);
 
-inline token_t token_stream_get_index(token_stream_t *ctx, size_t index);
+const token_t *token_stream_get(const token_stream_t *ctx, size_t index);
 
 #endif

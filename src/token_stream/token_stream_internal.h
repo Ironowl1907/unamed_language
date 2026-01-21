@@ -8,8 +8,9 @@
 struct token_stream {
   token_t *arr;
   size_t size;
+  size_t capacity;
 };
 
-void token_stream_resize(token_stream_t *ctx, size_t new_size);
+token_stream_error_e token_stream_resize(token_stream_t *ctx, size_t new_size);
 
 #endif
