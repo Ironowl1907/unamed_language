@@ -1,8 +1,9 @@
 #include "lexer.h"
+#include "token_stream.h"
 
 struct lexer {
   char raw_data[LEXER_RAW_BUFFER_SIZE];
-  token_t tokens[LEXER_TOKEN_BUFFER_SIZE];
+  token_stream_t *token_stream;
 
   uint32_t cursor;
   uint32_t token_count;

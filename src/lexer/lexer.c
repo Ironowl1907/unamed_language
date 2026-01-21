@@ -106,6 +106,14 @@ lexer_error_e lexer_append_token(lexer_t *ctx, token_type_e type,
   return LEXER_ERROR_NONE;
 }
 
+lexer_error_e lexer_set_token_stream(lexer_t *ctx,
+                                     token_stream_t *token_stream) {
+  if (!ctx || !token_stream)
+    return LEXER_ERROR_NULL_PARAMETER;
+
+  ctx->token_stream = token_stream;
+}
+
 void lexer_debug_print_tokens(const lexer_t *ctx) {
   uint32_t index = 0;
   for (;;) {

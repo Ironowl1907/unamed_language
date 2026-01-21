@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "token_stream.h"
 #include <stddef.h>
 #include <stdio.h>
 
@@ -11,7 +12,13 @@ int main() {
   if (!lexer)
     printf("Error creating lexer");
 
+  token_stream_t *token_stream = token_stream_create();
+  if (!token_stream)
+    printf("Error creating token stream");
+
   lexer_set_raw_data(lexer, input, size);
+
+  lexer_set_token_stream(lexer, token_stream);
 
   lexer_process_data(lexer);
 
