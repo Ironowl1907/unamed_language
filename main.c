@@ -2,11 +2,11 @@
 #include "token_stream.h"
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 int main() {
   // Input some data
   const char *input = "234 + 3 * 2";
-  const size_t size = 9;
 
   lexer_t *lexer = lexer_create();
   if (!lexer)
@@ -16,7 +16,7 @@ int main() {
   if (!token_stream)
     printf("Error creating token stream");
 
-  lexer_set_raw_data(lexer, input, size);
+  lexer_set_raw_data(lexer, input, strlen(input));
 
   lexer_set_token_stream(lexer, token_stream);
 
