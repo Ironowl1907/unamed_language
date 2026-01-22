@@ -29,11 +29,8 @@ typedef struct node {
 } node_t;
 
 parser_t *parser_create();
-void *parser_delete();
+void parser_delete(parser_t *ctx);
 
 parser_error_e parser_parse(parser_t *ctx);
-
-size_t parser_add_node(parser_t *ctx, node_t node);
-
 
 #endif
