@@ -7,7 +7,7 @@
 
 int main() {
   // Input some data
-  const char *input = "234 + 3 * 2 / 4 + 549";
+  const char *input = "234 + 3 * 2 / 4 + 549 * 0";
 
   lexer_t *lexer = lexer_create();
   if (!lexer) {

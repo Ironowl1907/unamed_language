@@ -9,7 +9,8 @@ token_stream_t *token_stream_create(void) {
   if (!ctx)
     return NULL;
 
-  ctx->capacity = TOKEN_BUFFER_SIZE;
+  // TODO : Remove magic number
+  ctx->capacity = 16;
 
   ctx->arr = malloc(ctx->capacity * sizeof(token_t));
 
@@ -45,7 +46,7 @@ token_stream_error_e token_stream_append(token_stream_t *ctx, token_t token) {
 
 const token_t token_stream_get(const token_stream_t *ctx, size_t index) {
   if (!ctx || index >= ctx->size)
-    return (token_t){{0}, TOKEN_TYPE_EOF};
+    return (token_t){0, TOKEN_TYPE_EOF};
   return ctx->arr[index];
 }
 

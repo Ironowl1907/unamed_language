@@ -64,19 +64,14 @@ static char lexer_consume_char(lexer_t *ctx) {
 }
 
 static lexer_error_e lexer_emit_token(lexer_t *ctx, token_type_e type,
-                                      const char *data) {
+                                      const uint32_t data) {
   if (!ctx || !ctx->token_stream)
     return LEXER_ERROR_NULL_PARAMETER;
 
   token_t token;
   token.type = type;
 
-  if (data) {
-    strncpy(token.data, data, TOKEN_BUFFER_SIZE - 1);
-    token.data[TOKEN_BUFFER_SIZE - 1] = '\0';
-  } else {
-    token.data[0] = '\0';
-  }
+  token.data = data;
 
   token_stream_error_e err = token_stream_append(ctx->token_stream, token);
 
@@ -98,40 +93,41 @@ lexer_error_e lexer_process_data(lexer_t *ctx) {
 
     switch (c) {
     case '+':
-      lexer_emit_token(ctx, TOKEN_TYPE_SUM, NULL);
+      lexer_emit_token(ctx, TOKEN_TYPE_SUM, 0);
       break;
     case '-':
-      lexer_emit_token(ctx, TOKEN_TYPE_RES, NULL);
+      lexer_emit_token(ctx, TOKEN_TYPE_RES, 0);
       break;
     case '*':
-      lexer_emit_token(ctx, TOKEN_TYPE_MUL, NULL);
+      lexer_emit_token(ctx, TOKEN_TYPE_MUL, 0);
       break;
     case '/':
-      lexer_emit_token(ctx, TOKEN_TYPE_DIV, NULL);
+      lexer_emit_token(ctx, TOKEN_TYPE_DIV, 0);
       break;
     case '(':
-      lexer_emit_token(ctx, TOKEN_TYPE_OPEN_PARENTHESIS, NULL);
+      lexer_emit_token(ctx, TOKEN_TYPE_OPEN_PARENTHESIS, 0);
       break;
     case ')':
-      lexer_emit_token(ctx, TOKEN_TYPE_CLOSE_PARENTHESIS, NULL);
+      lexer_emit_token(ctx, TOKEN_TYPE_CLOSE_PARENTHESIS, 0);
       break;
 
     default:
       if (isdigit((unsigned char)c)) {
-        char buffer[TOKEN_BUFFER_SIZE];
+        // TODO: Remove magic number
+        char buffer[32];
         size_t index = 0;
 
         buffer[index++] = c;
 
         while (isdigit((unsigned char)lexer_peek_char(ctx))) {
-          if (index + 1 >= TOKEN_BUFFER_SIZE)
+          if (index + 1 >= 32)
             return LEXER_ERROR_TOKEN_TOO_LONG;
 
           buffer[index++] = lexer_consume_char(ctx);
         }
 
         buffer[index] = '\0';
-        lexer_emit_token(ctx, TOKEN_TYPE_NUMBER, buffer);
+        lexer_emit_token(ctx, TOKEN_TYPE_NUMBER, atoi(buffer));
       } else {
         return LEXER_ERROR_UNRECOGNIZED_CHAR;
       }
@@ -139,7 +135,7 @@ lexer_error_e lexer_process_data(lexer_t *ctx) {
     }
   }
 
-  lexer_emit_token(ctx, TOKEN_TYPE_EOF, NULL);
+  lexer_emit_token(ctx, TOKEN_TYPE_EOF, 0);
   return LEXER_ERROR_NONE;
 }
 
@@ -152,10 +148,7 @@ void lexer_debug_print_tokens(const lexer_t *ctx) {
   for (size_t i = 0; i < count; ++i) {
     const token_t tok = token_stream_get(ctx->token_stream, i);
 
-    printf("TOKEN: %d", tok.type);
-    if (tok.data[0] != '\0')
-      printf(" Data: %s", tok.data);
-    printf("\n");
+    printf("TOKEN: %d  Data: %u\n", tok.type, tok.data);
 
     if (tok.type == TOKEN_TYPE_EOF)
       break;

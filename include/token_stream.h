@@ -2,7 +2,7 @@
 #define TOKEN_STREAM_H
 
 #include <stddef.h>
-#define TOKEN_BUFFER_SIZE 16
+#include <stdint.h>
 
 typedef struct token_stream token_stream_t;
 
@@ -25,7 +25,7 @@ typedef enum token_stream_error {
 } token_stream_error_e;
 
 typedef struct {
-  char data[TOKEN_BUFFER_SIZE];
+  uint32_t data;
   token_type_e type;
 } token_t;
 
