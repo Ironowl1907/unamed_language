@@ -43,10 +43,10 @@ token_stream_error_e token_stream_append(token_stream_t *ctx, token_t token) {
   return TOKEN_STREAM_ERROR_NONE;
 }
 
-const token_t *token_stream_get(const token_stream_t *ctx, size_t index) {
+const token_t token_stream_get(const token_stream_t *ctx, size_t index) {
   if (!ctx || index >= ctx->size)
-    return NULL;
-  return &ctx->arr[index];
+    return (token_t){{0}, TOKEN_TYPE_EOF};
+  return ctx->arr[index];
 }
 
 token_stream_error_e token_stream_resize(token_stream_t *ctx, size_t new_size) {

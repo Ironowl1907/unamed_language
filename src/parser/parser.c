@@ -2,6 +2,7 @@
 #include "parser_internal.h"
 #include "token_stream.h"
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 parser_t *parser_create() {
@@ -31,17 +32,54 @@ parser_error_e parser_parse(parser_t *ctx) {
   return PARSER_ERROR_NONE;
 }
 
-size_t parser_add_node(parser_t *ctx, node_t node);
+node_id parser_parse_expresion(parser_t *ctx) {
+  node_id a = parser_parse_term(ctx);
 
-node_id parser_parse_expresion(parser_t *ctx) {}
+  token_t opperand = parser_peek_token(ctx);
+  for (;;) {
+    if (opperand.type == TOKEN_TYPE_SUM) {
+      parser_consume_token(ctx);
+      node_id b = parser_parse_term(ctx);
+      a = parser_add_node(ctx, (node_t){a, b, NODE_TYPE_SUM});
+    } else if (opperand.type == TOKEN_TYPE_RES) {
+      parser_consume_token(ctx);
+      node_id b = parser_parse_term(ctx);
+      a = parser_add_node(ctx, (node_t){a, b, NODE_TYPE_REST});
+    } else {
+      return a;
+    }
+  }
+}
+
 node_id parser_parse_term(parser_t *ctx) {}
 node_id parser_parse_factor(parser_t *ctx) {}
 
-parser_error_e parser_ast_arena_resize(parser_t *ctx, size_t size) {}
+size_t parser_add_node(parser_t *ctx, node_t node) {
+  assert(ctx != NULL);
+  if (ctx->ast.size == ctx->ast.capacity)
+    parser_ast_arena_resize(ctx, ctx->ast.size * 2);
+  ctx->ast.nodes[ctx->ast.size] = node;
 
-token_t parser_consume_token(parser_t *ctx, const token_t * token) {
-  assert(ctx);
-
-  token = token_stream_get(ctx->tokens, ctx->token_consume_index++);
+  return ctx->ast.size++;
 }
-token_t parser_peek_token(parser_t *ctx) {}
+
+parser_error_e parser_ast_arena_resize(parser_t *ctx, size_t size) {
+  if (!ctx)
+    return PARSER_ERROR_NULL_PARAMETER;
+
+  node_t *new_arr = realloc(ctx->ast.nodes, size * sizeof *ctx->ast.nodes);
+  if (!new_arr)
+    return PARSER_ERROR_INSUFFICIENT_MEMORY;
+
+  ctx->ast.nodes = new_arr;
+  ctx->ast.capacity = size;
+
+  return PARSER_ERROR_NONE;
+}
+
+token_t parser_consume_token(parser_t *ctx) {
+  return token_stream_get(ctx->tokens, ctx->token_consume_index++);
+}
+token_t parser_peek_token(parser_t *ctx) {
+  return token_stream_get(ctx->tokens, ctx->token_consume_index);
+}

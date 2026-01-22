@@ -9,6 +9,8 @@ typedef size_t node_id;
 
 typedef enum {
   PARSER_ERROR_NONE = 0,
+  PARSER_ERROR_NULL_PARAMETER,
+  PARSER_ERROR_INSUFFICIENT_MEMORY,
 
 } parser_error_e;
 

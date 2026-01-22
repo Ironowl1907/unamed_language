@@ -150,16 +150,14 @@ void lexer_debug_print_tokens(const lexer_t *ctx) {
   size_t count = token_stream_size(ctx->token_stream);
 
   for (size_t i = 0; i < count; ++i) {
-    const token_t *tok = token_stream_get(ctx->token_stream, i);
-    if (!tok)
-      break;
+    const token_t tok = token_stream_get(ctx->token_stream, i);
 
-    printf("TOKEN: %d", tok->type);
-    if (tok->data[0] != '\0')
-      printf(" Data: %s", tok->data);
+    printf("TOKEN: %d", tok.type);
+    if (tok.data[0] != '\0')
+      printf(" Data: %s", tok.data);
     printf("\n");
 
-    if (tok->type == TOKEN_TYPE_EOF)
+    if (tok.type == TOKEN_TYPE_EOF)
       break;
   }
 }
