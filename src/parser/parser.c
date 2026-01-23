@@ -12,8 +12,10 @@ parser_t *parser_create() {
 
   // TODO: Remove magical number 16
   ctx->ast.nodes = malloc(sizeof(*ctx->ast.nodes) * 16);
-  if (!ctx->ast.nodes)
+  if (!ctx->ast.nodes) {
+    free(ctx);
     return NULL;
+  }
 
   ctx->token_consume_index = 0;
   ctx->ast.capacity = 16;
@@ -32,19 +34,26 @@ parser_error_e parser_parse(parser_t *ctx) {
   return PARSER_ERROR_NONE;
 }
 
-node_id parser_parse_expresion(parser_t *ctx) {
+node_id parser_parse_expression(parser_t *ctx) {
   node_id a = parser_parse_term(ctx);
 
-  token_t opperand = parser_peek_token(ctx);
   for (;;) {
-    if (opperand.type == TOKEN_TYPE_SUM) {
+    token_t operand = parser_peek_token(ctx);
+
+    if (operand.type == TOKEN_TYPE_SUM) {
       parser_consume_token(ctx);
       node_id b = parser_parse_term(ctx);
-      a = parser_add_node(ctx, (node_t){a, b, OP_ADD});
-    } else if (opperand.type == TOKEN_TYPE_RES) {
+      a = parser_add_node(ctx, (node_t){.kind = NODE_KIND_BINARY_OP,
+                                        .as.binary.left = a,
+                                        .as.binary.right = b,
+                                        .as.binary.op = OP_ADD});
+    } else if (operand.type == TOKEN_TYPE_RES) {
       parser_consume_token(ctx);
       node_id b = parser_parse_term(ctx);
-      a = parser_add_node(ctx, (node_t){a, b, OP_SUB});
+      a = parser_add_node(ctx, (node_t){.kind = NODE_KIND_BINARY_OP,
+                                        .as.binary.left = a,
+                                        .as.binary.right = b,
+                                        .as.binary.op = OP_SUB});
     } else {
       return a;
     }
@@ -56,8 +65,10 @@ node_id parser_parse_factor(parser_t *ctx) {}
 
 size_t parser_add_node(parser_t *ctx, node_t node) {
   assert(ctx != NULL);
-  if (ctx->ast.size == ctx->ast.capacity)
-    parser_ast_arena_resize(ctx, ctx->ast.size * 2);
+  if (ctx->ast.size == ctx->ast.capacity) {
+    // TODO: Error checking
+    parser_error_e error = parser_ast_arena_resize(ctx, ctx->ast.capacity * 2);
+  }
   ctx->ast.nodes[ctx->ast.size] = node;
 
   return ctx->ast.size++;

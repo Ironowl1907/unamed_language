@@ -21,7 +21,7 @@ struct parser {
 // clang-format off
 size_t parser_add_node(parser_t *ctx, node_t node);
 
-node_id parser_parse_expresion(parser_t *ctx);
+node_id parser_parse_expression(parser_t *ctx);
 node_id parser_parse_term(parser_t *ctx);
 node_id parser_parse_factor(parser_t *ctx);
 

@@ -15,9 +15,11 @@ typedef enum {
 } parser_error_e;
 
 typedef enum {
-  NODE_BINARY_OP,
-  NODE_UNARY_OP,
-  NODE_NUMBER,
+  NODE_KIND_BINARY_OP,
+  NODE_KIND_UNARY_OP,
+  NODE_KIND_NUMBER,
+
+  NODE_KIND_INVALID,
 } node_kind_e;
 
 typedef enum {
