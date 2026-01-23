@@ -15,19 +15,36 @@ typedef enum {
 } parser_error_e;
 
 typedef enum {
-  NODE_TYPE_SUM,
-  NODE_TYPE_REST,
-  NODE_TYPE_MUL,
-  NODE_TYPE_DIV,
-  NODE_TYPE_NEG,
+  NODE_BINARY_OP,
+  NODE_UNARY_OP,
+  NODE_NUMBER,
+} node_kind_e;
 
-  NODE_TYPE_FACTOR,
-
-} parser_node_type_e;
+typedef enum {
+  OP_ADD,
+  OP_SUB,
+  OP_MUL,
+  OP_DIV,
+  OP_NEG, // For unary
+} operator_e;
 
 typedef struct node {
-  node_id right, left;
-  parser_node_type_e type;
+  node_kind_e kind;
+
+  union {
+    struct {
+      operator_e op;
+      node_id left;
+      node_id right;
+    } binary;
+
+    struct {
+      operator_e op;
+      node_id operand;
+    } unary;
+
+    double number;
+  } as;
 } node_t;
 
 parser_t *parser_create();

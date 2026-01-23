@@ -40,11 +40,11 @@ node_id parser_parse_expresion(parser_t *ctx) {
     if (opperand.type == TOKEN_TYPE_SUM) {
       parser_consume_token(ctx);
       node_id b = parser_parse_term(ctx);
-      a = parser_add_node(ctx, (node_t){a, b, NODE_TYPE_SUM});
+      a = parser_add_node(ctx, (node_t){a, b, OP_ADD});
     } else if (opperand.type == TOKEN_TYPE_RES) {
       parser_consume_token(ctx);
       node_id b = parser_parse_term(ctx);
-      a = parser_add_node(ctx, (node_t){a, b, NODE_TYPE_REST});
+      a = parser_add_node(ctx, (node_t){a, b, OP_SUB});
     } else {
       return a;
     }
