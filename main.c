@@ -7,7 +7,7 @@
 
 int main() {
   // Input some data
-  const char *input = "234 + 3 * 2 / 4 + 549 * 0";
+  const char *input = "1 + 2 * -3";
 
   lexer_t *lexer = lexer_create();
   if (!lexer) {
@@ -35,14 +35,18 @@ int main() {
     return -1;
   }
 
-  lexer_debug_print_tokens(lexer);
+  // lexer_debug_print_tokens(lexer);
 
   parser_t *parser = parser_create();
   if (!parser) {
     printf("Error creating parser");
     return 1;
   }
+  if (parser_parse(parser) != PARSER_ERROR_NONE) {
+    printf("Parser error \n");
+  }
 
+  parser_delete(parser);
   token_stream_delete(token_stream);
   lexer_free(lexer);
 

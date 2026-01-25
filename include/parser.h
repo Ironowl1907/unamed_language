@@ -11,6 +11,7 @@ typedef enum {
   PARSER_ERROR_NONE = 0,
   PARSER_ERROR_NULL_PARAMETER,
   PARSER_ERROR_INSUFFICIENT_MEMORY,
+  PARSER_ERROR_WRONG_SINTAXIS,
 
 } parser_error_e;
 
@@ -53,5 +54,7 @@ parser_t *parser_create();
 void parser_delete(parser_t *ctx);
 
 parser_error_e parser_parse(parser_t *ctx);
+
+void parser_print_debug(parser_t *ctx, node_id ast);
 
 #endif
