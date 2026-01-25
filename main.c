@@ -1,6 +1,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "token_stream.h"
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -42,8 +43,10 @@ int main() {
     printf("Error creating parser");
     return 1;
   }
-  if (parser_parse(parser) != PARSER_ERROR_NONE) {
-    printf("Parser error \n");
+  parser_error_e err = parser_parse(parser);
+
+  if (err != PARSER_ERROR_NONE) {
+    fprintf(stderr, "Parser error: %s\n", parser_get_error_string(parser));
   }
 
   parser_delete(parser);

@@ -5,6 +5,8 @@
 #include "token_stream.h"
 #include <stddef.h>
 
+#define PARSER_ERROR_MSG_SIZE 256
+
 typedef struct ast_arena {
   node_t *nodes;
   size_t size;
@@ -16,6 +18,9 @@ struct parser {
   token_stream_t *tokens;
 
   size_t token_consume_index;
+
+  parser_error_e last_error;
+  char error_msg[PARSER_ERROR_MSG_SIZE];
 };
 
 // clang-format off
@@ -29,5 +34,9 @@ token_t parser_consume_token(parser_t * ctx);
 token_t parser_peek_token(parser_t * ctx);
 
 parser_error_e parser_ast_arena_resize(parser_t * ctx, size_t size);
+
+
+void parser_set_error(parser_t *ctx, parser_error_e code,
+                             const char *fmt, ...);
 
 #endif

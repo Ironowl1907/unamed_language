@@ -57,4 +57,8 @@ parser_error_e parser_parse(parser_t *ctx);
 
 void parser_print_debug(parser_t *ctx, node_id ast);
 
+const char *parser_get_error_string(parser_t *ctx);
+parser_error_e parser_get_error_code(parser_t *ctx);
+
+
 #endif

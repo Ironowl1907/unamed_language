@@ -2,6 +2,7 @@
 #include "parser_internal.h"
 #include "token_stream.h"
 #include <assert.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,6 +21,9 @@ parser_t *parser_create() {
   ctx->token_consume_index = 0;
   ctx->ast.capacity = 16;
   ctx->ast.size = 1; // 0 Reserved to error
+
+  ctx->last_error = PARSER_ERROR_NONE;
+  ctx->error_msg[0] = '\0';
   return ctx;
 }
 void parser_delete(parser_t *ctx) {
@@ -111,26 +115,30 @@ node_id parser_parse_term(parser_t *ctx) {
 }
 
 node_id parser_parse_factor(parser_t *ctx) {
-  if (parser_peek_token(ctx).type == TOKEN_TYPE_NUMBER) {
+  token_t tok = parser_peek_token(ctx);
+
+  if (tok.type == TOKEN_TYPE_NUMBER) {
     token_t a = parser_consume_token(ctx);
     return parser_add_node(
         ctx, (node_t){.kind = NODE_KIND_NUMBER, .as.number = a.data});
-  } //
-  else if (parser_peek_token(ctx).type == TOKEN_TYPE_OPEN_PARENTHESIS) {
+  }
+
+  if (tok.type == TOKEN_TYPE_NEGATION) {
     parser_consume_token(ctx);
-    return parser_parse_expression(ctx);
-    if (parser_peek_token(ctx).type != TOKEN_TYPE_CLOSE_PARENTHESIS) {
+    node_id n = parser_parse_factor(ctx);
+    if (!n) {
+      parser_set_error(ctx, PARSER_ERROR_WRONG_SINTAXIS,
+                       "Expected expression after unary '-'");
       return 0;
     }
-  } else if (parser_peek_token(ctx).type == TOKEN_TYPE_NEGATION) {
-    parser_consume_token(ctx);
-    node_id a = parser_parse_factor(ctx);
-    if (a == 0)
-      return 0;
     return parser_add_node(ctx, (node_t){.kind = NODE_KIND_UNARY_OP,
                                          .as.unary.op = OP_NEG,
-                                         .as.unary.operand = a});
+                                         .as.unary.operand = n});
   }
+
+  parser_set_error(ctx, PARSER_ERROR_WRONG_SINTAXIS,
+                   "Unexpected token at position %zu",
+                   ctx->token_consume_index);
   return 0;
 }
 
@@ -230,4 +238,34 @@ void parser_print_debug(parser_t *ctx, node_id ast) {
 
   printf("AST Debug Print (root = %zu):\n", ast);
   parser_print_debug_node(ctx, ast, 0);
+}
+
+void parser_set_error(parser_t *ctx, parser_error_e code, const char *fmt,
+                      ...) {
+  if (!ctx)
+    return;
+
+  ctx->last_error = code;
+
+  if (!fmt) {
+    ctx->error_msg[0] = '\0';
+    return;
+  }
+
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(ctx->error_msg, sizeof(ctx->error_msg), fmt, args);
+  va_end(args);
+}
+
+const char *parser_get_error_string(parser_t *ctx) {
+  if (!ctx || ctx->last_error == PARSER_ERROR_NONE)
+    return NULL;
+  return ctx->error_msg;
+}
+
+parser_error_e parser_get_error_code(parser_t *ctx) {
+  if (!ctx)
+    return PARSER_ERROR_NULL_PARAMETER;
+  return ctx->last_error;
 }
