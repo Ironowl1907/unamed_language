@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-parser_t *parser_create() {
+parser_t *parser_create(token_stream_t *token_stream) {
   parser_t *ctx = malloc(sizeof *ctx);
   if (!ctx)
     return NULL;
@@ -18,6 +18,7 @@ parser_t *parser_create() {
     return NULL;
   }
 
+  ctx->tokens = token_stream;
   ctx->token_consume_index = 0;
   ctx->ast.capacity = 16;
   ctx->ast.size = 1; // 0 Reserved to error
@@ -123,7 +124,7 @@ node_id parser_parse_factor(parser_t *ctx) {
         ctx, (node_t){.kind = NODE_KIND_NUMBER, .as.number = a.data});
   }
 
-  if (tok.type == TOKEN_TYPE_NEGATION) {
+  if (tok.type == TOKEN_TYPE_RES) {
     parser_consume_token(ctx);
     node_id n = parser_parse_factor(ctx);
     if (!n) {
@@ -136,14 +137,33 @@ node_id parser_parse_factor(parser_t *ctx) {
                                          .as.unary.operand = n});
   }
 
-  parser_set_error(ctx, PARSER_ERROR_WRONG_SINTAXIS,
-                   "Unexpected token at position %zu",
-                   ctx->token_consume_index);
+  if (parser_peek_token(ctx).type == TOKEN_TYPE_OPEN_PARENTHESIS) {
+    parser_consume_token(ctx);
+    node_id a = parser_parse_expression(ctx);
+    if (parser_peek_token(ctx).type != TOKEN_TYPE_CLOSE_PARENTHESIS) {
+      parser_set_error(
+          ctx, PARSER_ERROR_WRONG_SINTAXIS,
+          "Expected ')' at position %zu, instead type: %d, data: %d",
+          ctx->token_consume_index,
+          token_stream_get(ctx->tokens, ctx->token_consume_index).type,
+          token_stream_get(ctx->tokens, ctx->token_consume_index).data);
+    }
+    parser_consume_token(ctx);
+    return a;
+  }
+
+  parser_set_error(
+      ctx, PARSER_ERROR_WRONG_SINTAXIS,
+      "Unexpected token at position %zu, type: %d, data: %d",
+      ctx->token_consume_index,
+      token_stream_get(ctx->tokens, ctx->token_consume_index).type,
+      token_stream_get(ctx->tokens, ctx->token_consume_index).data);
   return 0;
 }
 
 size_t parser_add_node(parser_t *ctx, node_t node) {
   assert(ctx != NULL);
+  assert(ctx->ast.size);
   if (ctx->ast.size == ctx->ast.capacity) {
     // TODO: Error checking
     parser_error_e error = parser_ast_arena_resize(ctx, ctx->ast.capacity * 2);
@@ -168,9 +188,13 @@ parser_error_e parser_ast_arena_resize(parser_t *ctx, size_t size) {
 }
 
 token_t parser_consume_token(parser_t *ctx) {
+  assert(ctx);
+  assert(ctx->tokens);
   return token_stream_get(ctx->tokens, ctx->token_consume_index++);
 }
 token_t parser_peek_token(parser_t *ctx) {
+  assert(ctx);
+  assert(ctx->tokens);
   return token_stream_get(ctx->tokens, ctx->token_consume_index);
 }
 

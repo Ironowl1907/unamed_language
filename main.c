@@ -8,7 +8,7 @@
 
 int main() {
   // Input some data
-  const char *input = "1 + 2 * -3";
+  const char *input = "1 + 2 * (-3 * 4)";
 
   lexer_t *lexer = lexer_create();
   if (!lexer) {
@@ -36,9 +36,9 @@ int main() {
     return -1;
   }
 
-  // lexer_debug_print_tokens(lexer);
+  lexer_debug_print_tokens(lexer);
 
-  parser_t *parser = parser_create();
+  parser_t *parser = parser_create(token_stream);
   if (!parser) {
     printf("Error creating parser");
     return 1;
