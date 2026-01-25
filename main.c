@@ -1,13 +1,14 @@
 #include "lexer.h"
 #include "parser.h"
 #include "token_stream.h"
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
 int main() {
   // Input some data
-  const char *input = "234 + 3 * 2 / 4 + 549 * 0";
+  const char *input = "1 + 2 * (-3 * 4)";
 
   lexer_t *lexer = lexer_create();
   if (!lexer) {
@@ -37,12 +38,18 @@ int main() {
 
   lexer_debug_print_tokens(lexer);
 
-  parser_t *parser = parser_create();
+  parser_t *parser = parser_create(token_stream);
   if (!parser) {
     printf("Error creating parser");
     return 1;
   }
+  parser_error_e err = parser_parse(parser);
 
+  if (err != PARSER_ERROR_NONE) {
+    fprintf(stderr, "Parser error: %s\n", parser_get_error_string(parser));
+  }
+
+  parser_delete(parser);
   token_stream_delete(token_stream);
   lexer_free(lexer);
 
