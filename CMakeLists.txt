@@ -7,6 +7,7 @@ set(SOURCES
   src/lexer/lexer.c
   src/token_stream/token_stream.c
   src/parser/parser.c
+  src/ast/ast.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

@@ -1,3 +1,4 @@
+#include "ast.h"
 #include "lexer.h"
 #include "parser.h"
 #include "token_stream.h"
@@ -8,7 +9,7 @@
 
 int main() {
   // Input some data
-  const char *input = "1 + 2 * (-3 * 4)";
+  const char *input = "1 + 2 * (-3)";
 
   lexer_t *lexer = lexer_create();
   if (!lexer) {
@@ -43,11 +44,22 @@ int main() {
     printf("Error creating parser");
     return 1;
   }
-  parser_error_e err = parser_parse(parser);
+  ast_t *ast = NULL;
+  parser_error_e err = parser_parse(parser, &ast);
 
   if (err != PARSER_ERROR_NONE) {
     fprintf(stderr, "Parser error: %s\n", parser_get_error_string(parser));
   }
+
+  if (!ast) {
+    printf("AST null!\n");
+    return -1;
+  }
+
+  ast_print_debug(ast, ast->root);
+
+  // double result;
+  // ast_evaluate(ast, ast->root, &result);
 
   parser_delete(parser);
   token_stream_delete(token_stream);
