@@ -9,24 +9,24 @@
 
 int main() {
   // Input some data
-  const char *input = "1 + 2 * (-3)";
+  const char *input = "1 + 2 * (-3) / 0";
 
   lexer_t *lexer = lexer_create();
   if (!lexer) {
-    printf("Error creating lexer");
+    printf("Error creating lexer\n");
     return 1;
   }
 
   token_stream_t *token_stream = token_stream_create();
   if (!token_stream) {
-    printf("Error creating token stream");
+    printf("Error creating token stream\n");
     return 1;
   }
 
   lexer_error_e error;
   error = lexer_set_raw_data(lexer, input, strlen(input));
   if (error != LEXER_ERROR_NONE) {
-    printf("Lexer error code %d", error);
+    printf("Lexer error code %d\n", error);
   }
 
   lexer_set_token_stream(lexer, token_stream);
@@ -41,7 +41,7 @@ int main() {
 
   parser_t *parser = parser_create(token_stream);
   if (!parser) {
-    printf("Error creating parser");
+    printf("Error creating parser\n");
     return 1;
   }
   ast_t *ast = NULL;
@@ -58,8 +58,13 @@ int main() {
 
   ast_print_debug(ast, ast->root);
 
-  // double result;
-  // ast_evaluate(ast, ast->root, &result);
+  double result;
+  ast_error_e ast_error = ast_evaluate(ast, ast->root, &result);
+  if (ast_error != AST_ERROR_NONE) {
+    printf("AST evaluation error: %d\n", ast_error);
+		return -1;
+  }
+  printf("Result: %f\n", result);
 
   parser_delete(parser);
   token_stream_delete(token_stream);

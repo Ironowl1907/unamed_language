@@ -57,7 +57,7 @@ node_id parser_parse_expression(parser_t *ctx) {
       a = ast_add_node(ctx->ast, (node_t){.kind = NODE_KIND_BINARY_OP,
                                           .as.binary.left = a,
                                           .as.binary.right = b,
-                                          .as.binary.op = OP_ADD});
+                                          .as.binary.op = BINARY_OP_ADD});
       if (a == 0)
         return 0;
     } else if (operand.type == TOKEN_TYPE_RES) {
@@ -68,7 +68,7 @@ node_id parser_parse_expression(parser_t *ctx) {
       a = ast_add_node(ctx->ast, (node_t){.kind = NODE_KIND_BINARY_OP,
                                           .as.binary.left = a,
                                           .as.binary.right = b,
-                                          .as.binary.op = OP_SUB});
+                                          .as.binary.op = BINARY_OP_SUB});
       if (a == 0)
         return 0;
     } else {
@@ -93,7 +93,7 @@ node_id parser_parse_term(parser_t *ctx) {
       a = ast_add_node(ctx->ast, (node_t){.kind = NODE_KIND_BINARY_OP,
                                           .as.binary.left = a,
                                           .as.binary.right = b,
-                                          .as.binary.op = OP_MUL});
+                                          .as.binary.op = BINARY_OP_MUL});
       if (a == 0)
         return 0;
     } else if (operand.type == TOKEN_TYPE_DIV) {
@@ -104,7 +104,7 @@ node_id parser_parse_term(parser_t *ctx) {
       a = ast_add_node(ctx->ast, (node_t){.kind = NODE_KIND_BINARY_OP,
                                           .as.binary.left = a,
                                           .as.binary.right = b,
-                                          .as.binary.op = OP_DIV});
+                                          .as.binary.op = BINARY_OP_DIV});
       if (a == 0)
         return 0;
     } else {
@@ -131,7 +131,7 @@ node_id parser_parse_factor(parser_t *ctx) {
       return 0;
     }
     return ast_add_node(ctx->ast, (node_t){.kind = NODE_KIND_UNARY_OP,
-                                           .as.unary.op = OP_NEG,
+                                           .as.unary.op = UNARY_OP_NEG,
                                            .as.unary.operand = n});
   }
 

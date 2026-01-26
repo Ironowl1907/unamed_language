@@ -9,6 +9,10 @@ typedef enum {
   AST_ERROR_NULL_PARAMETER,
   AST_ERROR_INSUFFICIENT_MEMORY,
   AST_ERROR_WRONG_SINTAXIS,
+
+  AST_ERROR_EVAL_ZERO_DIVISION,
+  AST_ERROR_EVAL_AST_INVALID_NODE,
+
 } ast_error_e;
 
 typedef enum {
@@ -20,25 +24,28 @@ typedef enum {
 } node_kind_e;
 
 typedef enum {
-  OP_ADD,
-  OP_SUB,
-  OP_MUL,
-  OP_DIV,
-  OP_NEG, // For unary
-} operator_e;
+  BINARY_OP_ADD,
+  BINARY_OP_SUB,
+  BINARY_OP_MUL,
+  BINARY_OP_DIV,
+} binary_operator_e;
+
+typedef enum {
+  UNARY_OP_NEG,
+} unary_operator_e;
 
 typedef struct node {
   node_kind_e kind;
 
   union {
     struct {
-      operator_e op;
+      binary_operator_e op;
       node_id left;
       node_id right;
     } binary;
 
     struct {
-      operator_e op;
+      unary_operator_e op;
       node_id operand;
     } unary;
 
@@ -57,7 +64,7 @@ typedef struct ast {
 ast_t *ast_create(void);
 void ast_destroy(ast_t *ctx);
 
-void ast_evaluate(ast_t *ctx, node_id root, double *result);
+ast_error_e ast_evaluate(ast_t *ctx, node_id root, double *result);
 
 ast_error_e ast_arena_resize(ast_t *ctx, size_t size);
 size_t ast_add_node(ast_t *ctx, node_t node);

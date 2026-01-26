@@ -1,3 +1,4 @@
+#include "ast.h"
 #include "ast_internal.h"
 #include <assert.h>
 #include <stdio.h>
@@ -58,20 +59,77 @@ ast_error_e ast_arena_resize(ast_t *ctx, size_t size) {
   return AST_ERROR_NONE;
 }
 
-void ast_evaluate(ast_t *ctx, node_id root, double *result) {}
+ast_error_e ast_evaluate(ast_t *ctx, node_id nodeId, double *result) {
+  node_t node = ctx->nodes[nodeId];
 
-static const char *op_to_string(operator_e op) {
+  double l = 0.0, r = 0.0;
+  ast_error_e err;
+
+  switch (node.kind) {
+
+  case NODE_KIND_BINARY_OP:
+    err = ast_evaluate(ctx, node.as.binary.left, &l);
+    if (err != AST_ERROR_NONE)
+      return err;
+
+    err = ast_evaluate(ctx, node.as.binary.right, &r);
+    if (err != AST_ERROR_NONE)
+      return err;
+
+    switch (node.as.binary.op) {
+    case BINARY_OP_ADD:
+      *result = l + r;
+      break;
+
+    case BINARY_OP_SUB:
+      *result = l - r;
+      break;
+
+    case BINARY_OP_MUL:
+      *result = l * r;
+      break;
+
+    case BINARY_OP_DIV:
+      if (r == 0.0)
+        return AST_ERROR_EVAL_ZERO_DIVISION;
+      *result = l / r;
+      break;
+    }
+    break;
+
+  case NODE_KIND_UNARY_OP:
+    err = ast_evaluate(ctx, node.as.unary.operand, &l);
+    if (err != AST_ERROR_NONE)
+      return err;
+
+    switch (node.as.unary.op) {
+    case UNARY_OP_NEG:
+      *result = -l;
+      break;
+    }
+    break;
+
+  case NODE_KIND_NUMBER:
+    *result = node.as.number;
+    break;
+
+  case NODE_KIND_INVALID:
+    return AST_ERROR_EVAL_AST_INVALID_NODE;
+  }
+
+  return AST_ERROR_NONE;
+}
+
+static const char *op_to_string(binary_operator_e op) {
   switch (op) {
-  case OP_ADD:
+  case BINARY_OP_ADD:
     return "+";
-  case OP_SUB:
+  case BINARY_OP_SUB:
     return "-";
-  case OP_MUL:
+  case BINARY_OP_MUL:
     return "*";
-  case OP_DIV:
+  case BINARY_OP_DIV:
     return "/";
-  case OP_NEG:
-    return "NEG";
   default:
     return "UNKNOWN_OP";
   }
