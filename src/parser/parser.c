@@ -8,12 +8,15 @@
 
 parser_t *parser_create(token_stream_t *token_stream) {
   parser_t *ctx = malloc(sizeof *ctx);
-  if (!ctx)
+  if (!ctx) {
+    free(ctx);
     return NULL;
+  }
 
   // TODO: Remove magical number 16
   ctx->ast.nodes = malloc(sizeof(*ctx->ast.nodes) * 16);
   if (!ctx->ast.nodes) {
+    free(ctx->ast.nodes);
     free(ctx);
     return NULL;
   }
