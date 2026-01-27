@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ALPHANUMERIC_BUFFER_SIZE 32
+
 lexer_t *lexer_create(void) {
   lexer_t *ctx = malloc(sizeof *ctx);
   if (!ctx)
@@ -113,14 +115,13 @@ lexer_error_e lexer_process_data(lexer_t *ctx) {
 
     default:
       if (isdigit((unsigned char)c)) {
-        // TODO: Remove magic number
-        char buffer[32];
+        char buffer[ALPHANUMERIC_BUFFER_SIZE];
         size_t index = 0;
 
         buffer[index++] = c;
 
         while (isdigit((unsigned char)lexer_peek_char(ctx))) {
-          if (index + 1 >= 32)
+          if (index + 1 >= ALPHANUMERIC_BUFFER_SIZE)
             return LEXER_ERROR_TOKEN_TOO_LONG;
 
           buffer[index++] = lexer_consume_char(ctx);

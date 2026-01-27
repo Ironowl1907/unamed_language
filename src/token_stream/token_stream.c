@@ -4,13 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TOKEN_STREAM_INIT_SIZE 16
+
 token_stream_t *token_stream_create(void) {
   token_stream_t *ctx = malloc(sizeof *ctx);
   if (!ctx)
     return NULL;
 
-  // TODO : Remove magic number
-  ctx->capacity = 16;
+  ctx->capacity = TOKEN_STREAM_INIT_SIZE;
 
   ctx->arr = malloc(ctx->capacity * sizeof(token_t));
 

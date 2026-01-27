@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define AST_ARENA_INIT_SIZE 16
+
 ast_t *ast_create(void) {
   ast_t *ctx;
 
@@ -13,8 +15,7 @@ ast_t *ast_create(void) {
     return NULL;
   }
 
-  // TODO: Remove magical number 16
-  ctx->nodes = malloc(sizeof(*ctx->nodes) * 16);
+  ctx->nodes = malloc(sizeof(*ctx->nodes) * AST_ARENA_INIT_SIZE);
   if (!ctx->nodes) {
     free(ctx->nodes);
     free(ctx);
@@ -33,12 +34,13 @@ void ast_destroy(ast_t *ctx) {
   }
 }
 
-size_t ast_add_node(ast_t *ctx, node_t node) {
+node_id ast_add_node(ast_t *ctx, node_t node) {
   assert(ctx != NULL);
   assert(ctx->size);
   if (ctx->size == ctx->capacity) {
-    // TODO: Error checking
     ast_error_e error = ast_arena_resize(ctx, ctx->capacity * 2);
+    if (error != AST_ERROR_NONE)
+      return 0;
   }
   ctx->nodes[ctx->size] = node;
 
