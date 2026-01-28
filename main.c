@@ -9,7 +9,7 @@
 
 int main() {
   // Input some data
-  const char *input = "1 + 2 * (-3) / 0";
+  const char *input = "fn sum(a, b) { return a + b}";
 
   lexer_t *lexer = lexer_create();
   if (!lexer) {
