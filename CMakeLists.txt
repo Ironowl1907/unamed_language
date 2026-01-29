@@ -12,6 +12,8 @@ set(SOURCES
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
   include
 )

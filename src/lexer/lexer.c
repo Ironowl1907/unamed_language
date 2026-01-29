@@ -1,3 +1,4 @@
+#include "lexer.h"
 #include "lexer_internal.h"
 #include "token_stream.h"
 
@@ -65,17 +66,11 @@ static char lexer_consume_char(lexer_t *ctx) {
   return c;
 }
 
-static lexer_error_e lexer_emit_token(lexer_t *ctx, token_type_e type,
-                                      const uint32_t data) {
+static lexer_error_e lexer_emit_token(lexer_t *ctx, token_t tk) {
   if (!ctx || !ctx->token_stream)
     return LEXER_ERROR_NULL_PARAMETER;
 
-  token_t token;
-  token.type = type;
-
-  token.data = data;
-
-  token_stream_error_e err = token_stream_append(ctx->token_stream, token);
+  token_stream_error_e err = token_stream_append(ctx->token_stream, tk);
 
   if (err == TOKEN_STREAM_ERROR_INSUFFICIENT_MEMORY)
     return LEXER_ERROR_OUT_OF_MEMORY;
@@ -88,55 +83,88 @@ lexer_error_e lexer_process_data(lexer_t *ctx) {
     return LEXER_ERROR_NULL_PARAMETER;
 
   while (lexer_peek_char(ctx) != '\0') {
+    printf("==---==\n");
+    lexer_debug_print_tokens(ctx);
     char c = lexer_consume_char(ctx);
 
     if (isspace((unsigned char)c))
       continue;
 
+    // clang-format off
     switch (c) {
     case '+':
-      lexer_emit_token(ctx, TOKEN_TYPE_SUM, 0);
+      lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_PLUS, .as.opperand = '+'});
       break;
     case '-':
-      lexer_emit_token(ctx, TOKEN_TYPE_RES, 0);
+      lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_MINUS, .as.opperand = '-'});
       break;
     case '*':
-      lexer_emit_token(ctx, TOKEN_TYPE_MUL, 0);
+      lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_STAR, .as.opperand = '*'});
       break;
     case '/':
-      lexer_emit_token(ctx, TOKEN_TYPE_DIV, 0);
+      lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_FSLASH, .as.opperand = '/'});
       break;
     case '(':
-      lexer_emit_token(ctx, TOKEN_TYPE_OPEN_PARENTHESIS, 0);
+      lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_LEFTPAR, .as.opperand = '('});
       break;
     case ')':
-      lexer_emit_token(ctx, TOKEN_TYPE_CLOSE_PARENTHESIS, 0);
+      lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_RIGHTPAR, .as.opperand = ')'});
       break;
-
-    default:
-      if (isdigit((unsigned char)c)) {
-        char buffer[ALPHANUMERIC_BUFFER_SIZE];
+    case '{':
+      lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_LEFTBRACKET, .as.opperand = '{'});
+      break;
+    case '}':
+      lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_RIGHTBRACKET, .as.opperand = '}'});
+      break;
+      // clang-format on
+    default: {
+      if (isalpha(c)) {
+        char buff[IDENTIFIER_MAX_SIZE];
         size_t index = 0;
-
-        buffer[index++] = c;
-
-        while (isdigit((unsigned char)lexer_peek_char(ctx))) {
-          if (index + 1 >= ALPHANUMERIC_BUFFER_SIZE)
-            return LEXER_ERROR_TOKEN_TOO_LONG;
-
-          buffer[index++] = lexer_consume_char(ctx);
+        buff[index++] = c;
+        while (isalnum(lexer_peek_char(ctx))) {
+          buff[index++] = lexer_consume_char(ctx);
         }
-
-        buffer[index] = '\0';
-        lexer_emit_token(ctx, TOKEN_TYPE_NUMBER, atoi(buffer));
-      } else {
-        return LEXER_ERROR_UNRECOGNIZED_CHAR;
+        buff[index++] = '\0';
+        if (strcmp(buff, "fn") == 0) {
+          lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_FN});
+          continue;
+        }
+        token_t tok;
+        tok.type = TOKEN_TYPE_IDENTIFIER;
+        strcpy(tok.as.identifier, buff);
+        lexer_emit_token(ctx, tok);
+        continue;
       }
-      break;
+      if (isdigit(c)) {
+        char buff[IDENTIFIER_MAX_SIZE];
+        size_t index = 0;
+        uint8_t fractional = 0;
+        buff[index++] = c;
+        if (lexer_peek_char(ctx) == '.' && !fractional) {
+          fractional = 1;
+          buff[index++] = '.';
+        }
+        while (isdigit(lexer_peek_char(ctx))) {
+          buff[index++] = lexer_consume_char(ctx);
+        }
+        buff[index++] = '\0';
+
+        char *end;
+        double result = strtod(buff, &end);
+        if (end != buff) {
+          lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_LITERAL,
+                                          .as.double_literal = result});
+          continue;
+        }
+      }
+
+      return LEXER_ERROR_UNRECOGNIZED_CHAR;
+    }
     }
   }
 
-  lexer_emit_token(ctx, TOKEN_TYPE_EOF, 0);
+  lexer_emit_token(ctx, (token_t){.type = TOKEN_TYPE_EOF});
   return LEXER_ERROR_NONE;
 }
 
@@ -149,7 +177,31 @@ void lexer_debug_print_tokens(const lexer_t *ctx) {
   for (size_t i = 0; i < count; ++i) {
     const token_t tok = token_stream_get(ctx->token_stream, i);
 
-    printf("TOKEN: %d  Data: %u\n", tok.type, tok.data);
+    switch (tok.type) {
+    case TOKEN_TYPE_PLUS:
+    case TOKEN_TYPE_MINUS:
+    case TOKEN_TYPE_FSLASH:
+    case TOKEN_TYPE_STAR:
+    case TOKEN_TYPE_RIGHTPAR:
+    case TOKEN_TYPE_LEFTPAR:
+    case TOKEN_TYPE_RIGHTBRACKET:
+    case TOKEN_TYPE_LEFTBRACKET:
+      printf("TOKEN: %d  Data: %u\n", tok.type, tok.as.opperand);
+      break;
+    case TOKEN_TYPE_LITERAL:
+      printf("TOKEN: %d  Data: %f\n", tok.type, tok.as.double_literal);
+      break;
+    case TOKEN_TYPE_IDENTIFIER:
+      printf("TOKEN: %d  Data: %s\n", tok.type, tok.as.identifier);
+      break;
+    case TOKEN_TYPE_FN:
+      printf("TOKEN: %d  Data: FN\n", tok.type);
+      break;
+    case TOKEN_TYPE_EOF:
+      printf("TOKEN: %d  Data: OEF\n", tok.type);
+      break;
+      break;
+    }
 
     if (tok.type == TOKEN_TYPE_EOF)
       break;

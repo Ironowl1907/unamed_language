@@ -49,7 +49,7 @@ node_id parser_parse_expression(parser_t *ctx) {
   for (;;) {
     token_t operand = parser_peek_token(ctx);
 
-    if (operand.type == TOKEN_TYPE_SUM) {
+    if (operand.type == TOKEN_TYPE_PLUS) {
       parser_consume_token(ctx);
       node_id b = parser_parse_term(ctx);
       if (b == 0)
@@ -60,7 +60,7 @@ node_id parser_parse_expression(parser_t *ctx) {
                                           .as.binary.op = BINARY_OP_ADD});
       if (a == 0)
         return 0;
-    } else if (operand.type == TOKEN_TYPE_RES) {
+    } else if (operand.type == TOKEN_TYPE_MINUS) {
       parser_consume_token(ctx);
       node_id b = parser_parse_term(ctx);
       if (b == 0)
@@ -85,7 +85,7 @@ node_id parser_parse_term(parser_t *ctx) {
   for (;;) {
     token_t operand = parser_peek_token(ctx);
 
-    if (operand.type == TOKEN_TYPE_MUL) {
+    if (operand.type == TOKEN_TYPE_STAR) {
       parser_consume_token(ctx);
       node_id b = parser_parse_factor(ctx);
       if (b == 0)
@@ -96,7 +96,7 @@ node_id parser_parse_term(parser_t *ctx) {
                                           .as.binary.op = BINARY_OP_MUL});
       if (a == 0)
         return 0;
-    } else if (operand.type == TOKEN_TYPE_DIV) {
+    } else if (operand.type == TOKEN_TYPE_FSLASH) {
       parser_consume_token(ctx);
       node_id b = parser_parse_factor(ctx);
       if (b == 0)
@@ -116,13 +116,13 @@ node_id parser_parse_term(parser_t *ctx) {
 node_id parser_parse_factor(parser_t *ctx) {
   token_t tok = parser_peek_token(ctx);
 
-  if (tok.type == TOKEN_TYPE_NUMBER) {
+  if (tok.type == TOKEN_TYPE_LITERAL) {
     token_t a = parser_consume_token(ctx);
-    return ast_add_node(
-        ctx->ast, (node_t){.kind = NODE_KIND_NUMBER, .as.number = a.data});
+    return ast_add_node(ctx->ast, (node_t){.kind = NODE_KIND_NUMBER,
+                                           .as.number = a.as.double_literal});
   }
 
-  if (tok.type == TOKEN_TYPE_RES) {
+  if (tok.type == TOKEN_TYPE_MINUS) {
     parser_consume_token(ctx);
     node_id n = parser_parse_factor(ctx);
     if (!n) {
@@ -135,16 +135,18 @@ node_id parser_parse_factor(parser_t *ctx) {
                                            .as.unary.operand = n});
   }
 
-  if (parser_peek_token(ctx).type == TOKEN_TYPE_OPEN_PARENTHESIS) {
+  if (parser_peek_token(ctx).type == TOKEN_TYPE_LEFTPAR) {
     parser_consume_token(ctx);
     node_id a = parser_parse_expression(ctx);
-    if (parser_peek_token(ctx).type != TOKEN_TYPE_CLOSE_PARENTHESIS) {
+    if (parser_peek_token(ctx).type != TOKEN_TYPE_RIGHTPAR) {
       parser_set_error(
           ctx, PARSER_ERROR_WRONG_SINTAXIS,
           "Expected ')' at position %zu, instead type: %d, data: %d",
           ctx->token_consume_index,
           token_stream_get(ctx->tokens, ctx->token_consume_index).type,
-          token_stream_get(ctx->tokens, ctx->token_consume_index).data);
+          // TODO: FIX BUG, reading without knowing token_type
+          token_stream_get(ctx->tokens, ctx->token_consume_index)
+              .as.identifier);
     }
     parser_consume_token(ctx);
     return a;
@@ -155,7 +157,8 @@ node_id parser_parse_factor(parser_t *ctx) {
       "Unexpected token at position %zu, type: %d, data: %d",
       ctx->token_consume_index,
       token_stream_get(ctx->tokens, ctx->token_consume_index).type,
-      token_stream_get(ctx->tokens, ctx->token_consume_index).data);
+      // TODO: FIX BUG, reading without knowing token_type
+      token_stream_get(ctx->tokens, ctx->token_consume_index).as.identifier);
   return 0;
 }
 

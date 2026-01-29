@@ -1,15 +1,13 @@
-#include "ast.h"
 #include "lexer.h"
-#include "parser.h"
 #include "token_stream.h"
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
-int main() {
+int main(void) {
   // Input some data
-  const char *input = "fn sum(a, b) { return a + b}";
+  const char *input = "fn sum (a) {a + 1.12}";
 
   lexer_t *lexer = lexer_create();
   if (!lexer) {
@@ -39,36 +37,36 @@ int main() {
 
   lexer_debug_print_tokens(lexer);
 
-  parser_t *parser = parser_create(token_stream);
-  if (!parser) {
-    printf("Error creating parser\n");
-    return 1;
-  }
-  ast_t *ast = NULL;
-  parser_error_e err = parser_parse(parser, &ast);
-
-  if (err != PARSER_ERROR_NONE) {
-    fprintf(stderr, "Parser error: %s\n", parser_get_error_string(parser));
-  }
-
-  if (!ast) {
-    printf("AST null!\n");
-    return -1;
-  }
-
-  ast_print_debug(ast, ast->root);
-
-  double result;
-  ast_error_e ast_error = ast_evaluate(ast, ast->root, &result);
-  if (ast_error != AST_ERROR_NONE) {
-    printf("AST evaluation error: %d\n", ast_error);
-		return -1;
-  }
-  printf("Result: %f\n", result);
-
-  parser_delete(parser);
-  token_stream_delete(token_stream);
-  lexer_free(lexer);
+  // parser_t *parser = parser_create(token_stream);
+  // if (!parser) {
+  //   printf("Error creating parser\n");
+  //   return 1;
+  // }
+  // ast_t *ast = NULL;
+  // parser_error_e err = parser_parse(parser, &ast);
+  //
+  // if (err != PARSER_ERROR_NONE) {
+  //   fprintf(stderr, "Parser error: %s\n", parser_get_error_string(parser));
+  // }
+  //
+  // if (!ast) {
+  //   printf("AST null!\n");
+  //   return -1;
+  // }
+  //
+  // ast_print_debug(ast, ast->root);
+  //
+  // double result;
+  // ast_error_e ast_error = ast_evaluate(ast, ast->root, &result);
+  // if (ast_error != AST_ERROR_NONE) {
+  //   printf("AST evaluation error: %d\n", ast_error);
+  // return -1;
+  // }
+  // printf("Result: %f\n", result);
+  //
+  // parser_delete(parser);
+  // token_stream_delete(token_stream);
+  // lexer_free(lexer);
 
   return 0;
 }
